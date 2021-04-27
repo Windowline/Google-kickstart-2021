@@ -8,48 +8,45 @@ using namespace std;
 
 int N, K, ans;
 
-typedef struct data {
-    data* child[26];
+class Trie {
+    public:
     int cnt;
-}trie;
+    Trie next[26] = {nullptr, };
+};
 
-trie* root;
+Trie* root = nullptr;
 
 void insert(string& s) {
-    trie* cur = root;
-    for(char ch : s) {
-        int idx = ch - 'A';
-        if (!cur->child[idx])
-            cur->child[idx] = new trie();
-        cur = cur->child[idx];
+    Trie* cur = root;
+    for (int i = 0; i < s.size(); ++i) {
+        int idx = s[i] - 'A';
+        if (!cur->next[idx])
+            cur->next[idx] = new Trie();
+        cur = cur->next[idx];
     }
     cur->cnt++;
 }
 
-void dfs(trie* cur, int depth) {
-    //하위 노드들중에서 아직 그루핑되지 않은 단어들의 총수를 집계한다.
-    //(root~자신까지의 prefix를 갖고 아직 그루핑되지 않은 단어들의 총수)
+void dfs(Trie* cur, int depth) {
     for (int i = 0; i <= 25; ++i) {
-        if (cur->child[i]) {
-            dfs(cur->child[i], depth + 1);
-            cur->cnt += cur->child[i]->cnt;
+        if (cur->next[i]) {
+            dfs(cur->next[i], depth + 1);
+            cur->cnt += cur->next[i]->cnt;
         }
     }
-    while (cur->cnt >= K) {
+    while (cur->cnt <= K) {
+        ans += (depth * K);
         cur->cnt -= K;
-        ans += depth;
     }
 }
 
-
-
-
 void solve(vector<string>& str) {
-    root = new trie();
+    root = new Trie();
+    ans = 0;
     for (auto& s : str)
         insert(s);
-    ans = 0;
     dfs(root, 0);
+    return ans;
 }
 
 int main(int argc, const char * argv[]) {
